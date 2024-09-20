@@ -1,0 +1,92 @@
+BASIC SETUP
+==================================
+1. Clone the Repository
+	git clone <project-url>
+
+2. Navigate to the Project Folder
+	cd <project-folder>
+
+3. Install PHP Dependencies
+	composer install
+
+4. Install Node.js Dependencies
+	npm install
+
+5. Update the .env.example file (sqlite->mysql) and run the command 
+	cp .env.example .env
+
+6. Create a database and link up with .env file  
+
+7. Navigate (config -> database.php) and replce default database connection by 'mysql'
+	php artisan migrate
+
+8. Generate Application Key
+	php artisan key:generate
+
+9. Start the Development Serve
+	php artisan serve
+
+OBJECTIVE 2
+===========================================================================================
+Create a new git branch named dev and generate migration and seeder classes to create a
+table for employee information following the Laravel naming convention and insert test data.
+
+1. Single Command to Generate Everything You Need:
+	php artisan make:model <ModelName> -mcrfs		(here model name is 'Book')
+
+<ModelName>: Replace this with the name of your model, typically in singular form (example: Employee).
+-m: Generates a migration file along with the model. This file will be located in the database/migrations directory.
+-c: Creates a controller for the model. This will be placed in the app/Http/Controllers directory.
+-r: Indicates that the controller should be a resource controller, which includes methods for handling typical CRUD operations (index, create, store, show, edit, update, destroy).
+-f: Generates a factory for the model, placed in the database/factories directory. Factories are useful for generating test data.
+-s: Creates a seeder for the model, found in the database/seeders directory. Seeders are used to insert data into the database.
+
+2. Define the Table Structure
+	Open the generated migration file located in the database/migrations directory.
+	In the up() method, define the columns of the table:
+
+	public function up(): void
+    {
+        Schema::create('books', function (Blueprint $table) {
+            $table->id();
+            $table->string('title', 255);
+            $table->string('author', 255);
+            $table->string('isbn', 13);
+            $table->smallInteger('stock')->default(0);
+            $table->float('price', 8, 2)->nullable();
+            $table->timestamps();
+        });
+    }
+
+3. Run the Migration
+	php artisan migrate
+
+This command connects to your configured database server (as specified in the .env file) and updates the database by applying the changes defined in the migration files.
+
+4. Go to the BookFactory file from database/factories and update the file to generate test data
+
+	public function definition(): array
+    {
+        return [
+            'title' => $this->faker->sentence(3), // Use sentence to generate a title
+            'author' => $this->faker->name, // Use name for the author
+            'isbn' => $this->faker->unique()->isbn13, // Use isbn13 for a valid ISBN
+            'stock' => $this->faker->numberBetween(0, 100), // Generate a random stock value
+            'price' => $this->faker->randomFloat(2, 5, 100), // Generate a random price between 5 and 100
+        ];
+    }
+
+5. Goto BookSeeder file from database/seeders and update the file to run the factory in the seeder
+
+	class BookSeeder extends Seeder
+	{
+	    public function run(): void
+	    {
+	        Book::factory(10)->create();
+	    }
+	}
+
+Note: Note: Don't forget to add "use App\Models\Employee;"
+
+5. Run the Seeder
+	php artisan db:seed --class=BookSeeder (for Employee model seeder name will be BookSeeder)
